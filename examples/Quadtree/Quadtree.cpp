@@ -16,39 +16,34 @@ int main(){
     SPPAR::Rectf screenBounds(0,0,50,50);
     SPPAR::Quadtree<Entity> qtree(screenBounds,[](const Entity& e, SPPAR::Rectf bounds){
         int index = -1;
+	float subWidth = bounds.width / 2;
+	float subHeight = bounds.height / 2;
+	float x = bounds.left;
+	float y = bounds.top;
 	std::cout << "Bounds: " << bounds.top << ", " << bounds.left << ", " 
 	            << bounds.width << ", " << bounds.height << std::endl;
-        double verticalMidpoint = bounds.left + (bounds.width / 2);
-        double horizontalMidpoint = bounds.top + (bounds.height / 2);
-        // Object can completely fit within the top quadrants
-        SPPAR::Rectf eBounds = e.bounds;
-        bool topQuadrant = (eBounds.top < horizontalMidpoint && eBounds.top + eBounds.height < horizontalMidpoint);
-        // Object can completely fit within the bottom quadrants
-        bool bottomQuadrant = (eBounds.top > horizontalMidpoint);
-        // Object can completely fit within the left quadrants
-        if (eBounds.left < verticalMidpoint && eBounds.left + eBounds.width < verticalMidpoint) {
-            if(topQuadrant) {
-                index = 1;
-                std::cout << "Entity is inside " << "top left" << std::endl;
-            }else if(bottomQuadrant) {
-                index = 2;
-                std::cout << "Entity is inside " << "down left" << std::endl;
-            }
-        }
-        // Object can completely fit within the right quadrants
-        else if (eBounds.left > verticalMidpoint && eBounds.left + eBounds.width < (eBounds.left + bounds.width)) {
-            if (topQuadrant) {
-                index = 0;
+	SPPAR::Rectf rightTop(x + subWidth,y,subWidth,subHeight);
+	SPPAR::Rectf leftTop(x,y,subWidth,subHeight);
+	SPPAR::Rectf leftBottom(x,y+subHeight,subWidth,subHeight);
+	SPPAR::Rectf rightBottom(x+subWidth,y+subHeight,subWidth,subHeight);
+
+	if(rightTop.contains(e.bounds)){
+		index = 0;
                 std::cout << "Entity is inside " << "top right" << std::endl;
-            }else if(bottomQuadrant){
-                index = 3;
+	}else if(leftTop.contains(e.bounds)){
+                std::cout << "Entity is inside " << "top left" << std::endl;
+		index = 1;
+	}else if(leftBottom.contains(e.bounds)){
+		index = 2;
+                std::cout << "Entity is inside " << "down left" << std::endl;
+	}else if(rightBottom.contains(e.bounds)){
+		index = 3;
                 std::cout << "Entity is inside " << "down right" << std::endl;
-            }
-        }
+	}
 	if(index == -1){
 	    std::cout << "Entity is inside root" << std::endl;
 	}
-        return index;
+	return index;
     });
     qtree.setMaxLevel(5);
     qtree.setMaxCapacity(1);
