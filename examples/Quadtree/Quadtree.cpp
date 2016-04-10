@@ -29,17 +29,17 @@ int main(){
         if (eBounds.left < verticalMidpoint && eBounds.left + eBounds.width < verticalMidpoint) {
             if(topQuadrant) {
                 index = 1;
-                std::cout << "Entity is inside " << "top right" << std::endl;
+                std::cout << "Entity is inside " << "top left" << std::endl;
             }else if(bottomQuadrant) {
                 index = 2;
                 std::cout << "Entity is inside " << "down left" << std::endl;
             }
         }
         // Object can completely fit within the right quadrants
-        else if (eBounds.left > verticalMidpoint) {
+        else if (eBounds.left > verticalMidpoint && eBounds.left + eBounds.width < (eBounds.left + bounds.width)) {
             if (topQuadrant) {
                 index = 0;
-                std::cout << "Entity is inside " << "top left" << std::endl;
+                std::cout << "Entity is inside " << "top right" << std::endl;
             }else if(bottomQuadrant){
                 index = 3;
                 std::cout << "Entity is inside " << "down right" << std::endl;
