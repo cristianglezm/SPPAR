@@ -2,7 +2,7 @@
 
 A header only Library for Space-Partitioning.
 
-See [TODO]()
+See [TODO](https://github.com/cristianglezm/SPPAR/blob/master/TODO.md)
 
 ## Building ##
 
@@ -28,10 +28,9 @@ make -j3
 make install
 
 ```
-
 ## Examples ##
 
-See [Examples]()
+See [Examples](https://github.com/cristianglezm/SPPAR/tree/master/examples)
 
 ## Contributions ##
 
