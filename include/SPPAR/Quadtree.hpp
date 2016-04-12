@@ -199,10 +199,9 @@ namespace SPPAR{
     , nodes()
     , bounds(bounds)
     , entities(){
-        nodes[0] = nullptr;
-        nodes[1] = nullptr;
-        nodes[2] = nullptr;
-        nodes[3] = nullptr;
+        for(auto i=0u;i<nodes.size();++i){
+            nodes[i] = nullptr;
+        }
     }
     template<typename T,class BinaryPredicate>
     void Quadtree<T,BinaryPredicate>::split(){
@@ -228,10 +227,9 @@ namespace SPPAR{
     , nodes()
     , bounds(bounds)
     , entities(){
-        nodes[0] = nullptr;
-        nodes[1] = nullptr;
-        nodes[2] = nullptr;
-        nodes[3] = nullptr;
+        for(auto i=0u;i<nodes.size();++i){
+            nodes[i] = nullptr;
+        }
     }
     template<typename T,class BinaryPredicate>
     void Quadtree<T,BinaryPredicate>::insert(T* e) noexcept{
