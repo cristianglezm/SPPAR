@@ -160,6 +160,11 @@ namespace SPPAR{
              */
             Quadtree<T,BinaryPredicate>& getNode(std::size_t index) noexcept;
             /**
+             * @brief Direct Access for Quadtree nodes, it doesn't check bounds or if it is splited.
+             * @return Quadtree &
+             */
+            Quadtree<T,BinaryPredicate>& operator[](std::size_t index) noexcept;
+            /**
              * @brief checks if it has been splited
              * @return bool
              */
@@ -389,12 +394,14 @@ namespace SPPAR{
     }
     template<typename T, class BinaryPredicate>
     Quadtree<T,BinaryPredicate>& Quadtree<T,BinaryPredicate>::getNode(std::size_t index) noexcept{
-        if(index == -1){
-            return *this;
-        }else if(isSplit()){
-            return nodes[index].get();
+        if(isSplit()){
+            return *nodes[index].get();
         }
         return *this;
+    }
+    template<typename T, class BinaryPredicate>
+    Quadtree<T,BinaryPredicate>& Quadtree<T,BinaryPredicate>::operator[](std::size_t index) noexcept{
+        return *nodes[index].get();
     }
     template<typename T, class BinaryPredicate>
     bool Quadtree<T,BinaryPredicate>::isSplit() const noexcept{
