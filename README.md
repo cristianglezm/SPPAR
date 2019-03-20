@@ -8,13 +8,13 @@ See [TODO](https://github.com/cristianglezm/SPPAR/blob/master/TODO.md)
 
 Requires CMake and one of the following compilers:
 
-* GCC 4.9 or newer;
+* GCC 8.1 or newer;
 * Clang 3.6 or newer (Xcode 5.0 or newer on OS X);
 * Visual Studio 2010 or newer;
 
 SPPAR requires the following dependencies:
 
-* [SFML](http://sfml-dev.org) 2.2 or newer (only to use Quadtree.render)
+* [SFML](http://sfml-dev.org) 2.5.1 or newer (only to use Quadtree.render)
 
 * [googletest](https://github.com/google/googletest) 1.7 or newer (only to build tests)
 
