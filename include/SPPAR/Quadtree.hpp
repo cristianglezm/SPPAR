@@ -14,8 +14,8 @@
 // limitations under the License.
 ////////////////////////////////////////////////////////////
 
-#ifndef QUADTREE_HPP
-#define QUADTREE_HPP
+#ifndef SPPAR_QUADTREE_HPP
+#define SPPAR_QUADTREE_HPP
 
 #ifdef RENDER_QTREE
     #include <SFML/Graphics/RectangleShape.hpp>
@@ -26,77 +26,67 @@
 #include <array>
 #include <algorithm>
 #include <memory>
+#include <type_traits>
 
 #include "Rect.hpp"
 
 namespace SPPAR{
     /**
      * @class Quadtree
-     * @brief Divides the space.
-     * @tparam T class that will be used
-     * @tparam BinaryPredicate Function that should return a
-     * int between -1 and 3 which they correspond:
-     * -# -1 The T stays at the parent node.
-     * -# 0 The T goes into child node 0
-     * -# 1 The T goes into child node 1
-     * -# 2 The T goes into child node 2
-     * -# 3 The T goes into child node 3
-     * @code
-     * [](const T& e, Rectf bounds) -> int{
-     *      // check e position and decide which node it will go into.
-     *      return -1; // stays in parent node.
-     * }
-     * @endcode
+     * @brief Divides the space into four rectangles.
+     * 
+     * @tparam T class that will be used, it will be saved as a pointer
      * @author Cristian Glez <Cristian.glez.m@gmail.com>
-     * @version 0.2
+     * @version 0.3
      */
-    template<typename T,typename BinaryPredicate = int (*)(const T&, Rectf)>
+    template<class T>
     class Quadtree{
+            static_assert(std::is_member_function_pointer<decltype(&T::getPosition)>::value, "T need to have function 'const Rectf& getPosition() const'");
         public:
             /**
              * @brief Container that uses the quadtree.
+             * we use a std::vector<T*> @todo explain more
              */
-            using container = typename std::vector<T*>;
+            using Container = typename std::vector<T*>;
             /**
              * @brief Constructor
              * @param bounds Rect bounds of the quadtree.
-             * @param gIndex function to insert entities to its appropiate node.
              */
-            Quadtree(Rectf bounds, BinaryPredicate gIndex);
+            Quadtree(const Rectf& bounds);
             /**
-             * @brief adds a pointer from the entity and adds it to its appropiate node, 
+             * @brief adds a pointer from the entity and adds it to its appropriate node, 
              * if it cannot fit within a node, it will be inserted at the parent.
-             * @Tparam e T
+             * @Tparam e T*
              */
             void insert(T* e) noexcept;
             /**
              * @brief getter for entities
-             * @return container&
+             * @return Container&
              */
-            container& getEntities() noexcept;
+            Container& getEntities() noexcept;
             /**
              * @brief getter for entities of the node
-             * @return container&
+             * @return Container&
              */
-            container& getEntities(std::size_t index) noexcept;
+            Container& getEntities(std::size_t index) noexcept;
             /**
              * @brief Clears the quadtree and its nodes.
              */
             void clear() noexcept;
             /**
-             * @brief Adds the entities(T) from the same space of the specified entity to the container(the specified entity is also added)
+             * @brief Adds the entities(T) from the same space of the specified entity to the Container(the specified entity is also added)
              *
-             * @param eList Quadtree::container& to add the entities from the same space of the one provided.
+             * @param eList Quadtree::Container& to add the entities from the same space of the one provided.
              * @param e T* Entity to check.
-             * @return Quadtree::container container of entities
+             * @return Quadtree::Container Container of entities
              */
-            void retrieve(T* e, container& eList) noexcept;
+            void retrieve(T* e, Container& eList) noexcept;
             /**
-             * @brief Overload for retrieve without the container.
-             * @param e
-             * @return container
+             * @brief Overload for retrieve without the Container.
+             * @param e T*
+             * @return Container
              */
-            container retrieve(T* e) noexcept;
+            Container retrieve(T* e) noexcept;
         #ifdef RENDER_QTREE
             /**
              * @brief Lets you see the borders of the quadtree
@@ -107,9 +97,9 @@ namespace SPPAR{
             /**
              * @brief sets the new bounds and updates the nodes if it has been split.
              * @param bounds
-             * @return Quadtree<T,BinaryPredicate>&
+             * @return Quadtree<T>&
              */
-            Quadtree<T,BinaryPredicate>& setBounds(Rectf bounds) noexcept;
+            Quadtree<T>& setBounds(const Rectf& bounds) noexcept;
             /**
              * @brief getter for bounds
              * @return Rectf
@@ -125,7 +115,7 @@ namespace SPPAR{
              * @param maxCap
              * @return Quadtree<T,BinaryPredicate>&
              */
-            Quadtree<T,BinaryPredicate>& setMaxCapacity(std::size_t maxCap) noexcept;
+            Quadtree<T>& setMaxCapacity(std::size_t maxCap) noexcept;
             /**
              * @brief getter for maxCapacity
              * @return std::size_t
@@ -136,34 +126,22 @@ namespace SPPAR{
              * @param maxLvl
              * @return Quadtree<T,BinaryPredicate>&
              */
-            Quadtree<T,BinaryPredicate>& setMaxLevel(std::size_t maxLvl) noexcept;
+            Quadtree<T>& setMaxLevel(std::size_t maxLvl) noexcept;
             /**
              * @brief getter for maxLevel
              * @return size_t
              */
             const std::size_t& getMaxLevel() const noexcept;
             /**
-             * @brief getter for the index where T is in.
-             * @param e
-             * @return int
-             */
-            int getPosition(const T& e) const noexcept;
-            /**
-             * @brief setter for the index lambda
-             * @param gIndex
-             * @return Quadtree
-             */
-            Quadtree<T,BinaryPredicate>& setGetIndex(BinaryPredicate gIndex) noexcept;
-            /**
              * @brief getter for node
              * @return Quadtree
              */
-            Quadtree<T,BinaryPredicate>& getNode(std::size_t index) noexcept;
+            Quadtree<T>& getNode(std::size_t index) noexcept;
             /**
              * @brief Direct Access for Quadtree nodes, it doesn't check bounds or if it is splited.
              * @return Quadtree &
              */
-            Quadtree<T,BinaryPredicate>& operator[](std::size_t index) noexcept;
+            Quadtree<T>& operator[](std::size_t index) noexcept;
             /**
              * @brief checks if it has been splited
              * @return bool
@@ -175,10 +153,14 @@ namespace SPPAR{
              * @brief Private constructor for nodes inside the quadtree.
              * @param level std::size_t the level it will be.
              * @param bounds Rect bounds of the node.
-             * @tparam gIndex BinaryPredicate is a function that returns the
-             * index to where the T is in -1 root number between 0 and 3 for nodes.
              */
-            Quadtree(std::size_t level,Rectf bounds, BinaryPredicate gIndex);
+            Quadtree(std::size_t level,const Rectf& bounds);
+            /**
+             * @brief getter for the index where T is in.
+             * @param e
+             * @return int if return is -1 is in the parent node else in the given index.
+             */
+            int getIndex(const T& e) const noexcept;
             /**
              * @brief private method to subdivide the quadtree.
              */
@@ -187,20 +169,18 @@ namespace SPPAR{
             std::size_t maxCapacity;
             std::size_t maxLevel;
             std::size_t level;
-            BinaryPredicate getIndex;
             std::array<std::unique_ptr<Quadtree>,4> nodes;
             Rectf bounds;
-            Quadtree::container entities;
+            Quadtree::Container entities;
     };
 //////////////////////////////////////////////////
 //////// Quadtree Impl
 //////////////////////////////////////////////////
-    template<typename T,class BinaryPredicate>
-    Quadtree<T,BinaryPredicate>::Quadtree(std::size_t level, Rectf bounds, BinaryPredicate gIndex)
+    template<class T>
+    Quadtree<T>::Quadtree(std::size_t level, const Rectf& bounds)
     : maxCapacity(15)
     , maxLevel(100)
     , level(level)
-    , getIndex(gIndex)
     , nodes()
     , bounds(bounds)
     , entities(){
@@ -208,27 +188,26 @@ namespace SPPAR{
             nodes[i] = nullptr;
         }
     }
-    template<typename T,class BinaryPredicate>
-    void Quadtree<T,BinaryPredicate>::split(){
-        int subWidth = (int)(bounds.width / 2);
-        int subHeight = (int)(bounds.height / 2);
-        int x = (int)bounds.left;
-        int y = (int)bounds.top;
-        nodes[0].reset(new Quadtree((level+1), Rectf(x + subWidth, y, subWidth, subHeight),getIndex));
-        nodes[1].reset(new Quadtree((level+1), Rectf(x, y, subWidth, subHeight),getIndex));
-        nodes[2].reset(new Quadtree((level+1), Rectf(x, y + subHeight, subWidth, subHeight),getIndex));
-        nodes[3].reset(new Quadtree((level+1), Rectf(x + subWidth, y + subHeight, subWidth, subHeight),getIndex));
+    template<class T>
+    void Quadtree<T>::split(){
+        int subWidth = static_cast<int>(bounds.width / 2);
+        int subHeight = static_cast<int>(bounds.height / 2);
+        int x = static_cast<int>(bounds.left);
+        int y = static_cast<int>(bounds.top);
+        nodes[0].reset(new Quadtree<T>((level+1), Rectf(x, y, subWidth, subHeight)));
+        nodes[1].reset(new Quadtree<T>((level+1), Rectf(x + subWidth, y, subWidth, subHeight)));
+        nodes[2].reset(new Quadtree<T>((level+1), Rectf(x, y + subHeight, subWidth, subHeight)));
+        nodes[3].reset(new Quadtree<T>((level+1), Rectf(x + subWidth, y + subHeight, subWidth, subHeight)));
         for(auto i=0u;i<nodes.size();++i){
             nodes[i]->setMaxCapacity(maxCapacity);
             nodes[i]->setMaxLevel(maxLevel);
         }
     }
-    template<typename T,class BinaryPredicate>
-    Quadtree<T,BinaryPredicate>::Quadtree(Rectf bounds, BinaryPredicate gIndex)
+    template<class T>
+    Quadtree<T>::Quadtree(const Rectf& bounds)
     : maxCapacity(15)
     , maxLevel(100)
     , level(0)
-    , getIndex(gIndex)
     , nodes()
     , bounds(bounds)
     , entities(){
@@ -236,11 +215,11 @@ namespace SPPAR{
             nodes[i] = nullptr;
         }
     }
-    template<typename T,class BinaryPredicate>
-    void Quadtree<T,BinaryPredicate>::insert(T* e) noexcept{
-        if (isSplit()) {
-            int index = getIndex(*e,bounds);
-            if (index != -1) {
+    template<class T>
+    void Quadtree<T>::insert(T* e) noexcept{
+        if(isSplit()){
+            int index = getIndex(*e);
+            if(index != -1){
                 nodes[index]->insert(e);
                 return;
             }
@@ -251,8 +230,8 @@ namespace SPPAR{
                 split();
             }
             entities.erase(std::remove_if(std::begin(entities),std::end(entities),
-                [&](typename container::value_type i){
-                    int index = getIndex(*i,bounds);
+                [&](typename Container::value_type i){
+                    int index = getIndex(*i);
                     if(index != -1){
                         nodes[index]->insert(i);
                         return true;
@@ -261,12 +240,12 @@ namespace SPPAR{
                 }),std::end(entities));
         }
     }
-    template<typename T, class BinaryPredicate>
-    typename Quadtree<T,BinaryPredicate>::container& Quadtree<T,BinaryPredicate>::getEntities() noexcept{
+    template<class T>
+    typename Quadtree<T>::Container& Quadtree<T>::getEntities() noexcept{
         return entities;
     }
-    template<typename T, class BinaryPredicate>
-    typename Quadtree<T,BinaryPredicate>::container& Quadtree<T,BinaryPredicate>::getEntities(std::size_t index) noexcept{
+    template<class T>
+    typename Quadtree<T>::Container& Quadtree<T>::getEntities(std::size_t index) noexcept{
         if(index == -1){
             return entities;
         }else if(isSplit()){
@@ -274,8 +253,8 @@ namespace SPPAR{
         }
         return entities;
     }
-    template<typename T,class BinaryPredicate>
-    void Quadtree<T,BinaryPredicate>::clear() noexcept{
+    template<class T>
+    void Quadtree<T>::clear() noexcept{
         entities.clear();
         if(isSplit()){
             for(auto i=0u;i<nodes.size();++i) {
@@ -284,17 +263,17 @@ namespace SPPAR{
             }
         }
     }
-    template<typename T,class BinaryPredicate>
-    typename Quadtree<T,BinaryPredicate>::container Quadtree<T,BinaryPredicate>::retrieve(T* e) noexcept{
-        typename Quadtree<T,BinaryPredicate>::container entitiesList;
+    template<class T>
+    typename Quadtree<T>::Container Quadtree<T>::retrieve(T* e) noexcept{
+        typename Quadtree<T>::Container entitiesList;
         retrieve(e, entitiesList);
         return entitiesList;
     }
-    template<typename T,class BinaryPredicate>
-    void Quadtree<T,BinaryPredicate>::retrieve(T* e, container& eList) noexcept{
-        typename Quadtree<T,BinaryPredicate>::container internDst;
-        int index = getIndex(*e,bounds);
-        if(index != -1 && nodes[0] != nullptr){
+    template<class T>
+    void Quadtree<T>::retrieve(T* e, Container& eList) noexcept{
+        typename Quadtree<T>::Container internDst;
+        int index = getIndex(*e);
+        if(index != -1 && isSplit()){
             nodes[index]->retrieve(e,internDst);
         }
         std::sort(std::begin(entities),std::end(entities));
@@ -304,8 +283,8 @@ namespace SPPAR{
                     std::back_inserter(eList));
     }
 #ifdef RENDER_QTREE
-    template<typename T,class BinaryPredicate>
-    void Quadtree<T,BinaryPredicate>::render(sf::RenderWindow& win){
+    template<class T>
+    void Quadtree<T>::render(sf::RenderWindow& win){
         sf::RectangleShape boundsShape(sf::Vector2f(bounds.width,bounds.height));
         boundsShape.setPosition(bounds.left,bounds.top);
         int b,g,r;
@@ -327,27 +306,27 @@ namespace SPPAR{
         }
     }
 #endif
-    template<typename T, class BinaryPredicate>
-    Quadtree<T,BinaryPredicate>& Quadtree<T,BinaryPredicate>::setBounds(Rectf bounds) noexcept{
+    template<class T>
+    Quadtree<T>& Quadtree<T>::setBounds(const Rectf& bounds) noexcept{
         this->bounds = bounds;
         if(isSplit()){
             int subWidth = static_cast<int>(bounds.width / 2);
             int subHeight = static_cast<int>(bounds.height / 2);
             int x = static_cast<int>(bounds.left);
             int y = static_cast<int>(bounds.top);
-            nodes[0]->setBounds(Rectf(x + subWidth, y, subWidth, subHeight));
-            nodes[1]->setBounds(Rectf(x, y, subWidth, subHeight));
+            nodes[0]->setBounds(Rectf(x, y, subWidth, subHeight));
+            nodes[1]->setBounds(Rectf(x + subWidth, y, subWidth, subHeight));
             nodes[2]->setBounds(Rectf(x, y + subHeight, subWidth, subHeight));
             nodes[3]->setBounds(Rectf(x + subWidth, y + subHeight, subWidth, subHeight));
         }
         return *this;
     }
-    template<typename T, class BinaryPredicate>
-    Rectf Quadtree<T,BinaryPredicate>::getBounds() const noexcept{
+    template<class T>
+    Rectf Quadtree<T>::getBounds() const noexcept{
         return bounds;
     }
-    template<typename T, class BinaryPredicate>
-    Rectf Quadtree<T,BinaryPredicate>::getBounds(int index) const noexcept{
+    template<class T>
+    Rectf Quadtree<T>::getBounds(int index) const noexcept{
         if(index == -1){
             return bounds;
         }else if(isSplit()){
@@ -355,8 +334,8 @@ namespace SPPAR{
         }
         return bounds;
     }
-    template<typename T, class BinaryPredicate>
-    Quadtree<T,BinaryPredicate>& Quadtree<T,BinaryPredicate>::setMaxCapacity(std::size_t maxCap) noexcept{
+    template<class T>
+    Quadtree<T>& Quadtree<T>::setMaxCapacity(std::size_t maxCap) noexcept{
         maxCapacity = maxCap;
         if(isSplit()){
             for(auto i=0u;i<nodes.size();++i){
@@ -365,47 +344,60 @@ namespace SPPAR{
         }
         return *this;
     }
-    template<typename T, class BinaryPredicate>
-    const std::size_t& Quadtree<T,BinaryPredicate>::getMaxCapacity() const noexcept{
+    template<class T>
+    const std::size_t& Quadtree<T>::getMaxCapacity() const noexcept{
         return maxCapacity;
     }
-    template<typename T, class BinaryPredicate>
-    Quadtree<T,BinaryPredicate>& Quadtree<T,BinaryPredicate>::setMaxLevel(std::size_t maxLvl) noexcept{
+    template<class T>
+    Quadtree<T>& Quadtree<T>::setMaxLevel(std::size_t maxLvl) noexcept{
         maxLevel = maxLvl;
         if(isSplit()){
             for(auto i=0u;i<nodes.size();++i){
-                nodes[i]->setMaxLevel(maxLvl);
+                nodes[i]->setMaxLevel(maxLevel);
             }
         }
         return *this;
     }
-    template<typename T, class BinaryPredicate>
-    const std::size_t& Quadtree<T,BinaryPredicate>::getMaxLevel() const noexcept{
+    template<class T>
+    const std::size_t& Quadtree<T>::getMaxLevel() const noexcept{
         return maxLevel;
     }
-    template<typename T, class BinaryPredicate>
-    int Quadtree<T,BinaryPredicate>::getPosition(const T& e) const noexcept{
-        return getIndex(e,bounds);
+    template<class T>
+    int Quadtree<T>::getIndex(const T& e) const noexcept{
+        int index = -1;
+        if(!isSplit()){
+            return index;
+        }
+        auto leftTop = nodes[0]->getBounds();
+        auto rightTop = nodes[1]->getBounds();
+        auto leftBottom = nodes[2]->getBounds();
+        auto rightBottom = nodes[3]->getBounds();
+        auto pos = e.getPosition();
+        if(leftTop.contains(pos.left,pos.top)){
+            index = 0;
+        }else if(rightTop.contains(pos.left,pos.top)){
+            index = 1;
+        }else if(leftBottom.contains(pos.left,pos.top)){
+            index = 2;
+        }else if(rightBottom.contains(pos.left,pos.top)){
+            index = 3;
+        }
+        return index;
     }
-    template<typename T, class BinaryPredicate>
-    Quadtree<T,BinaryPredicate>& Quadtree<T,BinaryPredicate>::setGetIndex(BinaryPredicate gIndex) noexcept{
-        getIndex = gIndex;
-        return *this;
-    }
-    template<typename T, class BinaryPredicate>
-    Quadtree<T,BinaryPredicate>& Quadtree<T,BinaryPredicate>::getNode(std::size_t index) noexcept{
+    template<class T>
+    Quadtree<T>& Quadtree<T>::getNode(std::size_t index) noexcept{
         if(isSplit()){
             return *nodes[index].get();
         }
         return *this;
     }
-    template<typename T, class BinaryPredicate>
-    Quadtree<T,BinaryPredicate>& Quadtree<T,BinaryPredicate>::operator[](std::size_t index) noexcept{
+    template<class T>
+    Quadtree<T>& Quadtree<T>::operator[](std::size_t index) noexcept{
         return *nodes[index].get();
     }
-    template<typename T, class BinaryPredicate>
-    bool Quadtree<T,BinaryPredicate>::isSplit() const noexcept{
+    template<class T>
+    bool Quadtree<T>::isSplit() const noexcept{
         return (nodes[0] != nullptr);
     }
 }
-#endif // QUADTREE_HPP
+#endif // SPPAR_QUADTREE_HPP
