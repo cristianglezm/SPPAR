@@ -25,6 +25,8 @@
 #ifndef RECT_HPP
 #define RECT_HPP
 
+#include <algorithm>
+
 namespace SPPAR{
     /**
      * @class Rect
